@@ -1,5 +1,8 @@
 import { ptBR } from '@mui/material/locale';
-import { createTheme } from '@mui/material/styles';
+import { alpha, createTheme } from '@mui/material/styles';
+
+const BRAND_DARK = '#0B5653';
+const TEXT_COLOR = '#231F20';
 
 export const theme = createTheme(
   {
@@ -8,11 +11,11 @@ export const theme = createTheme(
       primary: {
         main: '#11807C',
         light: '#3FCFCB',
-        dark: '#0B5653',
+        dark: BRAND_DARK,
         contrastText: '#FFFFFF',
       },
       text: {
-        primary: '#231F20',
+        primary: TEXT_COLOR,
       },
       background: {
         default: '#F6F9F9',
@@ -32,7 +35,13 @@ export const theme = createTheme(
     components: {
       MuiCard: {
         defaultProps: {
-          variant: 'outlined',
+          elevation: 0,
+        },
+        styleOverrides: {
+          root: {
+            borderRadius: 16,
+            boxShadow: `0 1px 2px ${alpha(TEXT_COLOR, 0.06)}, 0 8px 24px ${alpha(BRAND_DARK, 0.06)}`,
+          },
         },
       },
     },

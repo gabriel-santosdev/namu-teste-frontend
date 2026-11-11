@@ -1,6 +1,7 @@
 import AppBar from '@mui/material/AppBar';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
+import { alpha } from '@mui/material/styles';
 import { Link, Outlet } from 'react-router';
 import logo from '@/assets/namu-logo.webp';
 import { paths } from './paths';
@@ -12,7 +13,12 @@ export function AppLayout() {
         position="sticky"
         color="inherit"
         elevation={0}
-        sx={{ borderBottom: 1, borderColor: 'divider' }}
+        sx={({ palette }) => ({
+          borderBottom: 1,
+          borderColor: 'divider',
+          bgcolor: alpha(palette.background.paper, 0.85),
+          backdropFilter: 'blur(12px)',
+        })}
       >
         <Container maxWidth="lg">
           <Toolbar disableGutters>
