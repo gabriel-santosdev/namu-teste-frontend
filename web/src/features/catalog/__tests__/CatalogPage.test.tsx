@@ -1,5 +1,5 @@
-import { ApiError } from '@namu/shared';
-import { screen, within } from '@testing-library/react';
+import { ApiError, type Content, type Paginated } from '@namu/shared';
+import { act, screen, within } from '@testing-library/react';
 import { api } from '@/lib/api';
 import { buildContent, buildContentDetail, categories, paginate } from '@/test/fixtures';
 import { renderApp } from '@/test/renderApp';
@@ -75,6 +75,52 @@ describe('CatalogPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Todos os conteúdos' })).toBeInTheDocument();
     expect(await screen.findByText('2 conteúdos')).toBeInTheDocument();
+  });
+
+  it('mostra estado vazio ao filtrar por uma categoria sem conteúdos', async () => {
+    mockedApi.getContents.mockResolvedValue(paginate([]));
+    renderApp('/?categoria=sono');
+
+    expect(await screen.findByText('Nenhum conteúdo encontrado')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Sono' })).toBeInTheDocument();
+    expect(screen.getByText('0 conteúdos')).toBeInTheDocument();
+  });
+
+  it('mostra um placeholder quando o conteúdo não tem imagem', async () => {
+    mockedApi.getContents.mockResolvedValue(
+      paginate([buildContent({ id: 7, title: 'Yoga restaurativa', thumbnailUrl: null })]),
+    );
+    renderApp();
+
+    const card = (await screen.findByRole('link', { name: /Yoga restaurativa/ })).closest('li')!;
+    expect(within(card).getByTestId('thumbnail-placeholder')).toBeInTheDocument();
+    expect(card.querySelector('img')).toBeNull();
+  });
+
+  it('descarta a resposta de uma busca antiga que chega depois da nova', async () => {
+    let resolveStale: (value: Paginated<Content>) => void = () => {};
+    mockedApi.getContents.mockImplementation((query) => {
+      if (query?.search === 'med') return new Promise((resolve) => (resolveStale = resolve));
+      return Promise.resolve(paginate(query?.search === 'yoga' ? [contents[1]] : contents));
+    });
+    const { user } = renderApp();
+    await screen.findByText('2 conteúdos');
+
+    const input = screen.getByRole('textbox', { name: 'Buscar por título' });
+    await user.type(input, 'med{Enter}');
+    await user.clear(input);
+    await user.type(input, 'yoga{Enter}');
+
+    expect(await screen.findByText('1 conteúdo')).toBeInTheDocument();
+
+    await act(async () => resolveStale(paginate([contents[0]])));
+
+    expect(screen.getByRole('link', { name: /Yoga matinal/ })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /Meditação para iniciantes/ }),
+    ).not.toBeInTheDocument();
+    const staleCall = mockedApi.getContents.mock.calls.find(([query]) => query?.search === 'med');
+    expect(staleCall?.[1]?.aborted).toBe(true);
   });
 
   it('mostra erro e recarrega ao clicar em tentar novamente', async () => {

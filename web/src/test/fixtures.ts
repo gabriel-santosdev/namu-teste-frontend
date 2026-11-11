@@ -3,6 +3,7 @@ import type { Category, Content, ContentDetail, Paginated } from '@namu/shared';
 export const categories: Category[] = [
   { slug: 'meditacao', name: 'Meditação' },
   { slug: 'yoga', name: 'Yoga' },
+  { slug: 'sono', name: 'Sono' },
 ];
 
 export function buildContent(overrides: Partial<Content> = {}): Content {

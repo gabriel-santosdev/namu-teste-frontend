@@ -1,5 +1,5 @@
 import { ApiError } from '@namu/shared';
-import { screen } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { api } from '@/lib/api';
 import { buildContentDetail, categories } from '@/test/fixtures';
 import { renderApp } from '@/test/renderApp';
@@ -67,6 +67,64 @@ describe('ContentDetailPage', () => {
       'Não foi possível favoritar. Servidor indisponível',
     );
     expect(screen.getByRole('button', { name: 'Favoritar' })).toBeInTheDocument();
+  });
+
+  it('trata o 409 de favorito duplicado como sucesso', async () => {
+    mockedApi.addFavorite.mockRejectedValue(new ApiError('Conteúdo já está nos favoritos.', 409));
+    const { user } = renderApp('/conteudos/7');
+
+    const button = await screen.findByRole('button', { name: 'Favoritar' });
+    mockedApi.getContent.mockResolvedValue({ ...content, isFavorite: true });
+    await user.click(button);
+
+    expect(
+      await screen.findByRole('button', { name: 'Remover dos favoritos' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('mantém o estado consistente com clique duplo rápido', async () => {
+    mockedApi.addFavorite
+      .mockResolvedValueOnce(content)
+      .mockRejectedValueOnce(new ApiError('Conteúdo já está nos favoritos.', 409));
+    const { user } = renderApp('/conteudos/7');
+
+    const button = await screen.findByRole('button', { name: 'Favoritar' });
+    mockedApi.getContent.mockResolvedValue({ ...content, isFavorite: true });
+    await user.dblClick(button);
+
+    await waitFor(() => expect(mockedApi.addFavorite).toHaveBeenCalledTimes(2));
+    expect(
+      await screen.findByRole('button', { name: 'Remover dos favoritos' }),
+    ).toBeInTheDocument();
+    expect(mockedApi.removeFavorite).not.toHaveBeenCalled();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('mostra erro amigável com opção de tentar novamente quando a API retorna 500', async () => {
+    mockedApi.getContent.mockRejectedValueOnce(
+      new ApiError('Erro interno ao carregar o conteúdo.', 500),
+    );
+    const { user } = renderApp('/conteudos/7');
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Não foi possível carregar o conteúdo');
+    expect(alert).toHaveTextContent('Erro interno ao carregar o conteúdo.');
+
+    await user.click(within(alert).getByRole('button', { name: 'Tentar novamente' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Respiração consciente', level: 1 }),
+    ).toBeInTheDocument();
+  });
+
+  it('mostra um placeholder quando o conteúdo não tem imagem', async () => {
+    mockedApi.getContent.mockResolvedValue({ ...content, thumbnailUrl: null });
+    renderApp('/conteudos/7');
+
+    await screen.findByRole('heading', { name: 'Respiração consciente', level: 1 });
+    expect(screen.getByTestId('thumbnail-placeholder')).toBeInTheDocument();
+    expect(screen.getByRole('article').querySelector('img')).toBeNull();
   });
 
   it('mostra conteúdo não encontrado quando a API retorna 404', async () => {
