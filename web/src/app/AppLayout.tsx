@@ -40,7 +40,7 @@ export function AppLayout() {
             <Link to={paths.catalog} className="flex rounded-md">
               <img
                 src={logo}
-                alt="Namu — página inicial"
+                alt="Namu, página inicial"
                 width={398}
                 height={128}
                 className="h-8 w-auto"

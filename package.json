@@ -1,7 +1,7 @@
 {
   "name": "namu-conteudos",
   "private": true,
-  "description": "Biblioteca de conteúdos de bem-estar da Namu — web (React) e mobile (React Native) consumindo a mesma API.",
+  "description": "Biblioteca de conteúdos de bem-estar da Namu, com web em React e mobile em React Native consumindo a mesma API.",
   "workspaces": [
     "packages/*",
     "web"
