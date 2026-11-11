@@ -1,4 +1,5 @@
 import { formatContentType, formatDuration, type Content, type ContentType } from '@namu/shared';
+import ArrowForwardRounded from '@mui/icons-material/ArrowForwardRounded';
 import ArticleRounded from '@mui/icons-material/ArticleRounded';
 import HeadphonesRounded from '@mui/icons-material/HeadphonesRounded';
 import PlayCircleRounded from '@mui/icons-material/PlayCircleRounded';
@@ -10,6 +11,8 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import { alpha, type SxProps, type Theme } from '@mui/material/styles';
 import { memo, useState } from 'react';
+import { Link } from 'react-router';
+import { contentDetailPath } from '@/app/paths';
 
 const CONTENT_TYPE_ICONS: Record<ContentType, SvgIconComponent> = {
   audio: HeadphonesRounded,
@@ -48,7 +51,7 @@ export const ContentCard = memo(function ContentCard({ content, categoryName }: 
   const TypeIcon = CONTENT_TYPE_ICONS[content.type];
 
   return (
-    <Card className="flex h-full animate-fade-in-up flex-col">
+    <Card className="group relative flex h-full animate-fade-in-up flex-col transition duration-200 hover:shadow-lg active:scale-[0.99] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-(--mui-palette-primary-main)">
       <div className="relative aspect-video overflow-hidden bg-stone-200">
         <img
           src={content.thumbnailUrl}
@@ -57,7 +60,7 @@ export const ContentCard = memo(function ContentCard({ content, categoryName }: 
           height={360}
           loading="lazy"
           onLoad={() => setIsImageLoaded(true)}
-          className={`h-full w-full object-cover transition-opacity duration-500 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`h-full w-full object-cover transition duration-500 group-hover:scale-105 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
         />
         <dl className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
           <div>
@@ -100,11 +103,27 @@ export const ContentCard = memo(function ContentCard({ content, categoryName }: 
           className="line-clamp-2"
           sx={{ fontWeight: 700, lineHeight: 1.35 }}
         >
-          {content.title}
+          <Link
+            to={contentDetailPath(content.id)}
+            className="decoration-2 underline-offset-4 after:absolute after:inset-0 after:content-[''] group-hover:text-(--mui-palette-primary-dark) group-hover:underline focus-visible:underline focus-visible:outline-none"
+          >
+            {content.title}
+            <span className="sr-only">, ver detalhes</span>
+          </Link>
         </Typography>
         <Typography variant="body2" color="text.secondary" className="line-clamp-2">
           {content.description}
         </Typography>
+        <span
+          aria-hidden
+          className="mt-auto flex items-center gap-1 border-t border-black/10 pt-3 text-sm font-semibold text-(--mui-palette-primary-main) group-hover:text-(--mui-palette-primary-dark) group-has-[a:focus-visible]:text-(--mui-palette-primary-dark)"
+        >
+          Ver detalhes
+          <ArrowForwardRounded
+            fontSize="small"
+            className="transition-transform duration-200 group-hover:translate-x-1 group-has-[a:focus-visible]:translate-x-1"
+          />
+        </span>
       </CardContent>
     </Card>
   );

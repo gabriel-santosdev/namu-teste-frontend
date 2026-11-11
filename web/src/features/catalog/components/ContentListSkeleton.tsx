@@ -14,6 +14,7 @@ function ContentCardSkeleton() {
         <Skeleton animation="wave" width="85%" height={28} />
         <Skeleton animation="wave" width="100%" />
         <Skeleton animation="wave" width="70%" />
+        <Skeleton animation="wave" width="35%" sx={{ mt: 1.5 }} />
       </CardContent>
     </Card>
   );
