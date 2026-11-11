@@ -25,6 +25,10 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
 
+export function isClientError(error: unknown): boolean {
+  return isApiError(error) && error.status >= 400 && error.status < 500;
+}
+
 export function getErrorMessage(error: unknown): string {
   if (isApiError(error)) return error.message;
   return GENERIC_ERROR_MESSAGE;
