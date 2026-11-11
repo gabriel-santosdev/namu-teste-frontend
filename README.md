@@ -52,7 +52,18 @@ npm run build:web    # build de produção
 npm run typecheck    # checagem de tipos
 npm run lint         # ESLint
 npm run format       # Prettier
+npm test             # testes (shared + web)
 ```
+
+## Testes
+
+Jest + React Testing Library, com a API mockada. Cobrem os fluxos principais:
+
+- **Catálogo**: listagem, busca, filtro por categoria, estado vazio, erro com "tentar novamente" e navegação para o detalhe
+- **Detalhe**: exibição, favoritar/desfavoritar, rollback com erro ao favoritar, 404 e id inválido
+- **Shared**: formatações, mensagens de erro e política de retry
+
+![Testes da web passando](docs/testes-web.png)
 
 ## Estrutura
 
@@ -64,5 +75,4 @@ mobile            app React Native
 
 ## Pendências
 
-- Testes com Jest e React Testing Library
 - App mobile
