@@ -1,4 +1,4 @@
-import ImageRounded from '@mui/icons-material/ImageRounded';
+import HideImageOutlined from '@mui/icons-material/HideImageOutlined';
 import { useState } from 'react';
 
 type ImageStatus = 'loading' | 'loaded' | 'error';
@@ -17,9 +17,10 @@ function Thumbnail({ src, loading, className = '' }: ContentThumbnailProps) {
       <div
         aria-hidden
         data-testid="thumbnail-placeholder"
-        className="flex h-full w-full items-center justify-center bg-linear-to-br from-stone-100 to-stone-200 text-stone-400"
+        className="flex h-full w-full flex-col items-center justify-center gap-2 bg-linear-to-br from-stone-100 to-stone-200 px-4 text-center text-stone-500"
       >
-        <ImageRounded sx={{ fontSize: 48 }} />
+        <HideImageOutlined sx={{ fontSize: 40, opacity: 0.8 }} />
+        <span className="text-sm font-medium">Imagem não disponível</span>
       </div>
     );
   }
