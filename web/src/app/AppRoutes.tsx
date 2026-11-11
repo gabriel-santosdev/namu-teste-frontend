@@ -1,16 +1,13 @@
 import { Route, Routes } from 'react-router';
+import { CatalogPage } from '@/features/catalog/pages/CatalogPage';
+import { AppLayout } from './AppLayout';
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route
-        index
-        element={
-          <main className="mx-auto max-w-5xl p-6">
-            <h1 className="text-2xl font-semibold text-brand-700">Namu</h1>
-          </main>
-        }
-      />
+      <Route element={<AppLayout />}>
+        <Route index element={<CatalogPage />} />
+      </Route>
     </Routes>
   );
 }
