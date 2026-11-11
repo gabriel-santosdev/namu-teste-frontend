@@ -21,3 +21,14 @@ export function formatDuration(totalSeconds: number): string {
   if (hours === 0) return `${minutes} min`;
   return minutes === 0 ? `${hours} h` : `${hours} h ${minutes} min`;
 }
+
+const PUBLISHED_AT_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+export function formatPublishedAt(isoDate: string): string {
+  return PUBLISHED_AT_FORMATTER.format(new Date(isoDate));
+}
