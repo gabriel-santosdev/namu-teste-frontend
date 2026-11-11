@@ -10,7 +10,7 @@ export function ContentList({ contents }: ContentListProps) {
   const getCategoryName = useCategoryName();
 
   return (
-    <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {contents.map((content) => (
         <li key={content.id}>
           <ContentCard content={content} categoryName={getCategoryName(content.category)} />
