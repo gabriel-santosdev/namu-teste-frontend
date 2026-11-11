@@ -10,9 +10,10 @@ import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import { alpha, type SxProps, type Theme } from '@mui/material/styles';
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { Link } from 'react-router';
 import { contentDetailPath } from '@/app/paths';
+import { ContentThumbnail } from '@/components/ContentThumbnail';
 
 const CONTENT_TYPE_ICONS: Record<ContentType, SvgIconComponent> = {
   audio: HeadphonesRounded,
@@ -47,20 +48,15 @@ interface ContentCardProps {
 }
 
 export const ContentCard = memo(function ContentCard({ content, categoryName }: ContentCardProps) {
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const TypeIcon = CONTENT_TYPE_ICONS[content.type];
 
   return (
     <Card className="group relative flex h-full animate-fade-in-up flex-col transition duration-200 hover:shadow-lg active:scale-[0.99] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-(--mui-palette-primary-main)">
       <div className="relative aspect-video overflow-hidden bg-stone-200">
-        <img
+        <ContentThumbnail
           src={content.thumbnailUrl}
-          alt=""
-          width={640}
-          height={360}
           loading="lazy"
-          onLoad={() => setIsImageLoaded(true)}
-          className={`h-full w-full object-cover transition duration-500 group-hover:scale-105 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className="group-hover:scale-105"
         />
         <dl className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
           <div>

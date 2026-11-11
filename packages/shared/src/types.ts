@@ -13,7 +13,7 @@ export interface Content {
   type: ContentType;
   durationSeconds: number;
   instructor: string;
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
   publishedAt: string;
 }
 

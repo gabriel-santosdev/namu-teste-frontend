@@ -1,6 +1,7 @@
 import type { ContentDetail } from '@namu/shared';
 import Typography from '@mui/material/Typography';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { ContentThumbnail } from '@/components/ContentThumbnail';
 import { useCategoryName } from '@/features/catalog/hooks/useCategories';
 import { ContentMetadata } from './ContentMetadata';
 import { FavoriteButton } from './FavoriteButton';
@@ -12,7 +13,6 @@ interface ContentDetailViewProps {
 }
 
 export function ContentDetailView({ content }: ContentDetailViewProps) {
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const getCategoryName = useCategoryName();
 
@@ -24,14 +24,7 @@ export function ContentDetailView({ content }: ContentDetailViewProps) {
     <article className="grid animate-fade-in-up gap-8 md:grid-cols-2 md:items-start lg:gap-12">
       <title>{`${content.title} · Namu`}</title>
       <div className="aspect-video overflow-hidden rounded-2xl bg-stone-200 shadow-sm">
-        <img
-          src={content.thumbnailUrl}
-          alt=""
-          width={640}
-          height={360}
-          onLoad={() => setIsImageLoaded(true)}
-          className={`h-full w-full object-cover transition-opacity duration-500 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-        />
+        <ContentThumbnail src={content.thumbnailUrl} />
       </div>
       <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">

@@ -14,7 +14,10 @@ export function formatContentType(type: ContentType): string {
 }
 
 export function formatDuration(totalSeconds: number): string {
-  const totalMinutes = Math.max(1, Math.round(totalSeconds / SECONDS_PER_MINUTE));
+  const seconds = Math.max(0, Math.round(totalSeconds));
+  if (seconds < SECONDS_PER_MINUTE) return `${seconds} s`;
+
+  const totalMinutes = Math.round(seconds / SECONDS_PER_MINUTE);
   const hours = Math.floor(totalMinutes / MINUTES_PER_HOUR);
   const minutes = totalMinutes % MINUTES_PER_HOUR;
 
