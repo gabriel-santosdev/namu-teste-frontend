@@ -61,9 +61,12 @@ Jest + React Testing Library, com a API mockada. Cobrem os fluxos principais:
 
 - **Catálogo**: listagem, busca, filtro por categoria, estado vazio (inclusive categoria sem conteúdo), placeholder para conteúdo sem imagem, descarte de respostas antigas da busca, erro com "tentar novamente" e navegação para o detalhe
 - **Detalhe**: exibição, favoritar/desfavoritar, rollback com erro ao favoritar, 409 de favorito duplicado, clique duplo rápido, erro 500 com "tentar novamente", placeholder sem imagem, 404 e id inválido
+- **Teclado**: link "Pular para o conteúdo" e fluxo completo (buscar, abrir detalhe e favoritar) sem mouse
 - **Shared**: formatações (incluindo durações extremas como 45 s e 1 h 2 min), mensagens de erro e política de retry
 
 ![Testes da web passando](docs/testes-web.png)
+
+O CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) roda lint, formatação, tipos e testes a cada push na `main` e em pull requests.
 
 ## Estrutura
 
