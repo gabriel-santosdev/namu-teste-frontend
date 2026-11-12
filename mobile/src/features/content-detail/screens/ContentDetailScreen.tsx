@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErrorState } from '../../../components/ErrorState';
 import { FeedbackState } from '../../../components/FeedbackState';
 import { LoadingState } from '../../../components/LoadingState';
@@ -31,6 +32,7 @@ export function ContentDetailScreen({
     route.params.id,
   );
   const { isRefreshing, onRefresh } = usePullToRefresh(refetch);
+  const insets = useSafeAreaInsets();
 
   const handleRetry = useCallback(() => {
     refetch();
@@ -79,7 +81,10 @@ export function ContentDetailScreen({
 
   return (
     <ScrollView
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: spacing.xl * 2 + insets.bottom },
+      ]}
       refreshControl={
         <RefreshControl
           refreshing={isRefreshing}
@@ -97,7 +102,6 @@ export function ContentDetailScreen({
 const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
-    paddingBottom: spacing.xl * 2,
   },
   outlinedButton: {
     minHeight: 48,

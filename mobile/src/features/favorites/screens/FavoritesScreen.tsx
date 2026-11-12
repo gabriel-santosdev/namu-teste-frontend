@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErrorState } from '../../../components/ErrorState';
 import { FeedbackState } from '../../../components/FeedbackState';
 import { LoadingState } from '../../../components/LoadingState';
@@ -45,6 +46,7 @@ export function FavoritesScreen({ navigation }: FavoritesScreenProps) {
   const { data, error, isPending, isRefetching, refetch } = useFavorites();
   const getCategoryName = useCategoryName();
   const { isRefreshing, onRefresh } = usePullToRefresh(refetch);
+  const insets = useSafeAreaInsets();
   const [removeError, setRemoveError] = useState<string | null>(null);
 
   const { mutate: removeFavorite } = useRemoveFavorite({
@@ -115,7 +117,10 @@ export function FavoritesScreen({ navigation }: FavoritesScreenProps) {
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       ItemSeparatorComponent={ItemSeparator}
-      contentContainerStyle={styles.listContent}
+      contentContainerStyle={[
+        styles.listContent,
+        { paddingBottom: spacing.lg + insets.bottom },
+      ]}
       ListHeaderComponent={
         <View>
           {removeError ? (

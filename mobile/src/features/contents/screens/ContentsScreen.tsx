@@ -2,6 +2,7 @@ import { getErrorMessage, type Content } from '@namu/shared';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErrorState } from '../../../components/ErrorState';
 import { FeedbackState } from '../../../components/FeedbackState';
 import { LoadingState } from '../../../components/LoadingState';
@@ -41,6 +42,7 @@ export function ContentsScreen({ navigation }: ContentsScreenProps) {
   } = useInfiniteContents();
   const getCategoryName = useCategoryName();
   const { isRefreshing, onRefresh } = usePullToRefresh(refetch);
+  const insets = useSafeAreaInsets();
 
   const handleRetry = useCallback(() => {
     refetch();
@@ -93,7 +95,10 @@ export function ContentsScreen({ navigation }: ContentsScreenProps) {
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       ItemSeparatorComponent={ItemSeparator}
-      contentContainerStyle={styles.listContent}
+      contentContainerStyle={[
+        styles.listContent,
+        { paddingBottom: spacing.lg + insets.bottom },
+      ]}
       ListHeaderComponent={
         data.items.length > 0 ? (
           <Text style={styles.summary}>
