@@ -7,7 +7,8 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "android:device": "adb reverse tcp:8081 tcp:8081 && adb reverse tcp:3333 tcp:3333 && react-native run-android"
+    "android:device": "adb reverse tcp:8081 tcp:8081 && adb reverse tcp:3333 tcp:3333 && react-native run-android",
+    "android:apk": "node scripts/build-apk.js"
   },
   "dependencies": {
     "@react-navigation/native": "^7.5.1",
