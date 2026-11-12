@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ContentDetailScreen } from '../features/content-detail/screens/ContentDetailScreen';
 import { ContentsScreen } from '../features/contents/screens/ContentsScreen';
 import { colors } from '../theme/colors';
 import type { RootStackParamList } from './types';
@@ -19,6 +20,11 @@ export function RootNavigator() {
         name="Contents"
         component={ContentsScreen}
         options={{ title: 'Conteúdos' }}
+      />
+      <Stack.Screen
+        name="ContentDetail"
+        component={ContentDetailScreen}
+        options={{ title: 'Detalhes' }}
       />
     </Stack.Navigator>
   );

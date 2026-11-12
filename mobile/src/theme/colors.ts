@@ -8,4 +8,5 @@ export const colors = {
   surface: '#FFFFFF',
   border: '#E2E8E8',
   white: '#FFFFFF',
+  error: '#B3261E',
 } as const;

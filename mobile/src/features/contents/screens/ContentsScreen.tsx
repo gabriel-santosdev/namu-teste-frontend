@@ -1,9 +1,12 @@
 import { getErrorMessage, type Content } from '@namu/shared';
-import { useCallback, useState } from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useCallback } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { ErrorState } from '../../../components/ErrorState';
 import { FeedbackState } from '../../../components/FeedbackState';
 import { LoadingState } from '../../../components/LoadingState';
+import { usePullToRefresh } from '../../../hooks/usePullToRefresh';
+import type { RootStackParamList } from '../../../navigation/types';
 import { colors } from '../../../theme/colors';
 import { spacing } from '../../../theme/spacing';
 import { ContentListItem } from '../components/ContentListItem';
@@ -18,33 +21,37 @@ function ItemSeparator() {
   return <View style={styles.separator} />;
 }
 
-export function ContentsScreen() {
+type ContentsScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  'Contents'
+>;
+
+export function ContentsScreen({ navigation }: ContentsScreenProps) {
   const { data, error, isPending, isRefetching, refetch } =
     useFirstContentsPage();
   const getCategoryName = useCategoryName();
-  const [isPullRefreshing, setPullRefreshing] = useState(false);
-
-  const handleRefresh = useCallback(async () => {
-    setPullRefreshing(true);
-    try {
-      await refetch();
-    } finally {
-      setPullRefreshing(false);
-    }
-  }, [refetch]);
+  const { isRefreshing, onRefresh } = usePullToRefresh(refetch);
 
   const handleRetry = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  const handleOpenContent = useCallback(
+    (id: number) => {
+      navigation.navigate('ContentDetail', { id });
+    },
+    [navigation],
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: Content }) => (
       <ContentListItem
         content={item}
         categoryName={getCategoryName(item.category)}
+        onPress={handleOpenContent}
       />
     ),
-    [getCategoryName],
+    [getCategoryName, handleOpenContent],
   );
 
   if (isPending) {
@@ -73,7 +80,7 @@ export function ContentsScreen() {
           <Text style={styles.summary}>
             {data.data.length} de {data.total} conteúdos
           </Text>
-        ) : null
+        ) : undefined
       }
       ListEmptyComponent={
         <FeedbackState
@@ -83,8 +90,8 @@ export function ContentsScreen() {
       }
       refreshControl={
         <RefreshControl
-          refreshing={isPullRefreshing}
-          onRefresh={handleRefresh}
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
           colors={[colors.primary]}
           tintColor={colors.primary}
         />

@@ -1,6 +1,6 @@
 import { formatDuration, type Content } from '@namu/shared';
 import { memo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ContentThumbnail } from '../../../components/ContentThumbnail';
 import { colors } from '../../../theme/colors';
 import { spacing } from '../../../theme/spacing';
@@ -8,19 +8,23 @@ import { spacing } from '../../../theme/spacing';
 interface ContentListItemProps {
   content: Content;
   categoryName: string;
+  onPress: (contentId: number) => void;
 }
 
 export const ContentListItem = memo(function ContentListItem({
   content,
   categoryName,
+  onPress,
 }: ContentListItemProps) {
   const duration = formatDuration(content.durationSeconds);
 
   return (
-    <View
-      style={styles.card}
-      accessible
+    <Pressable
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+      onPress={() => onPress(content.id)}
+      accessibilityRole="button"
       accessibilityLabel={`${content.title}. Categoria: ${categoryName}. Duração: ${duration}`}
+      accessibilityHint="Abre os detalhes do conteúdo"
     >
       <ContentThumbnail uri={content.thumbnailUrl} />
       <View style={styles.body}>
@@ -32,7 +36,7 @@ export const ContentListItem = memo(function ContentListItem({
           <Text style={styles.durationLabel}>{duration}</Text>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 });
 
@@ -43,6 +47,9 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     backgroundColor: colors.surface,
+  },
+  cardPressed: {
+    opacity: 0.85,
   },
   body: {
     gap: spacing.sm,
