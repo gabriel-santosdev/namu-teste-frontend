@@ -1,6 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ContentDetailScreen } from '../features/content-detail/screens/ContentDetailScreen';
 import { ContentsScreen } from '../features/contents/screens/ContentsScreen';
+import { FavoritesHeaderButton } from '../features/favorites/components/FavoritesHeaderButton';
+import { FavoritesScreen } from '../features/favorites/screens/FavoritesScreen';
 import { colors } from '../theme/colors';
 import type { RootStackParamList } from './types';
 
@@ -19,12 +21,20 @@ export function RootNavigator() {
       <Stack.Screen
         name="Contents"
         component={ContentsScreen}
-        options={{ title: 'Conteúdos' }}
+        options={{
+          title: 'Conteúdos',
+          headerRight: FavoritesHeaderButton,
+        }}
       />
       <Stack.Screen
         name="ContentDetail"
         component={ContentDetailScreen}
         options={{ title: 'Detalhes' }}
+      />
+      <Stack.Screen
+        name="Favorites"
+        component={FavoritesScreen}
+        options={{ title: 'Favoritos' }}
       />
     </Stack.Navigator>
   );
