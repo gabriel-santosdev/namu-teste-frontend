@@ -22,6 +22,7 @@ export const ContentListItem = memo(function ContentListItem({
     <Pressable
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
       onPress={() => onPress(content.id)}
+      android_ripple={{ color: colors.primarySoft, foreground: true }}
       accessibilityRole="button"
       accessibilityLabel={`${content.title}. Categoria: ${categoryName}. Duração: ${duration}`}
       accessibilityHint="Abre os detalhes do conteúdo"
@@ -32,8 +33,11 @@ export const ContentListItem = memo(function ContentListItem({
         <Text style={styles.title} numberOfLines={2}>
           {content.title}
         </Text>
-        <View style={styles.durationBadge}>
-          <Text style={styles.durationLabel}>{duration}</Text>
+        <View style={styles.footer}>
+          <View style={styles.durationBadge}>
+            <Text style={styles.durationLabel}>{duration}</Text>
+          </View>
+          <Text style={styles.detailsLink}>Ver detalhes ›</Text>
         </View>
       </View>
     </Pressable>
@@ -68,8 +72,18 @@ const styles = StyleSheet.create({
     lineHeight: 23,
     color: colors.text,
   },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.xs,
+  },
+  detailsLink: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.primary,
+  },
   durationBadge: {
-    alignSelf: 'flex-start',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: 999,
