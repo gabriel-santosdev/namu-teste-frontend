@@ -1,19 +1,10 @@
 import { screen } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
-import { api } from '@/lib/api';
-import { buildContent, buildContentDetail, categories, paginate } from '@/test/fixtures';
+import { buildContent } from '@/test/fixtures';
+import { isFavoriteOnServer, seedContents } from '@/test/mockApi';
 import { renderApp } from '@/test/renderApp';
 
-jest.mock('@/lib/api', () => jest.requireActual('@/test/apiMock'));
-
-const mockedApi = jest.mocked(api);
-
 const MAX_TABS = 20;
-
-const contents = [
-  buildContent({ id: 1, title: 'Meditação para iniciantes', category: 'meditacao' }),
-  buildContent({ id: 2, title: 'Yoga matinal', category: 'yoga' }),
-];
 
 async function tabUntilFocused(user: UserEvent, element: HTMLElement) {
   for (let i = 0; i < MAX_TABS && document.activeElement !== element; i++) {
@@ -23,13 +14,10 @@ async function tabUntilFocused(user: UserEvent, element: HTMLElement) {
 }
 
 beforeEach(() => {
-  jest.clearAllMocks();
-  mockedApi.getCategories.mockResolvedValue(categories);
-  mockedApi.getContents.mockImplementation((query) =>
-    Promise.resolve(paginate(query?.search === 'yoga' ? [contents[1]] : contents)),
-  );
-  mockedApi.getContent.mockResolvedValue(buildContentDetail({ id: 2, title: 'Yoga matinal' }));
-  mockedApi.addFavorite.mockResolvedValue(contents[1]);
+  seedContents([
+    buildContent({ id: 1, title: 'Meditação para iniciantes', category: 'meditacao' }),
+    buildContent({ id: 2, title: 'Yoga matinal', category: 'yoga' }),
+  ]);
 });
 
 describe('Navegação por teclado', () => {
@@ -61,15 +49,12 @@ describe('Navegação por teclado', () => {
     const heading = await screen.findByRole('heading', { name: 'Yoga matinal', level: 1 });
     expect(heading).toHaveFocus();
 
-    mockedApi.getContent.mockResolvedValue(
-      buildContentDetail({ id: 2, title: 'Yoga matinal', isFavorite: true }),
-    );
     await tabUntilFocused(user, screen.getByRole('button', { name: 'Favoritar' }));
     await user.keyboard('{Enter}');
 
     expect(
       await screen.findByRole('button', { name: 'Remover dos favoritos' }),
     ).toBeInTheDocument();
-    expect(mockedApi.addFavorite).toHaveBeenCalledWith(2);
+    expect(isFavoriteOnServer(2)).toBe(true);
   });
 });

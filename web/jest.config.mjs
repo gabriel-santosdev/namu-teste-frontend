@@ -1,7 +1,6 @@
 export default {
   displayName: 'web',
-  testEnvironment: 'jsdom',
-  setupFiles: ['<rootDir>/src/test/polyfills.ts'],
+  testEnvironment: '<rootDir>/src/test/environment.cjs',
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
   transform: {
     '^.+\\.(ts|tsx)$': [
@@ -13,10 +12,16 @@ export default {
         },
       },
     ],
+    '[\\\\/]node_modules[\\\\/]until-async[\\\\/].+\\.js$': [
+      '@swc/jest',
+      { module: { type: 'commonjs' } },
+    ],
   },
+  transformIgnorePatterns: ['[\\\\/]node_modules[\\\\/](?!until-async[\\\\/])'],
   moduleNameMapper: {
     '\\.css$': '<rootDir>/src/test/styleStub.ts',
     '\\.(webp|png|jpg|jpeg|svg)$': '<rootDir>/src/test/fileStub.ts',
+    '^@/config/env$': '<rootDir>/src/test/envStub.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
 };

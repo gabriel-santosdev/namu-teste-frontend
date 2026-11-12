@@ -21,6 +21,16 @@ export default tseslint.config(
     },
   },
   {
+    files: ['**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: globals.node,
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+  {
     files: ['web/**/*.{ts,tsx}'],
     plugins: { react, 'react-hooks': reactHooks, 'jsx-a11y': jsxA11y },
     settings: { react: { version: 'detect' } },

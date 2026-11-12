@@ -1,12 +1,9 @@
-import { ApiError, type Content, type Paginated } from '@namu/shared';
 import { act, screen, within } from '@testing-library/react';
-import { api } from '@/lib/api';
-import { buildContent, buildContentDetail, categories, paginate } from '@/test/fixtures';
+import { http, HttpResponse } from 'msw';
+import { buildContent, paginate } from '@/test/fixtures';
+import { apiUrl, errorResponse, seedContents } from '@/test/mockApi';
 import { renderApp } from '@/test/renderApp';
-
-jest.mock('@/lib/api', () => jest.requireActual('@/test/apiMock'));
-
-const mockedApi = jest.mocked(api);
+import { findRequests, lastContentsQuery, server } from '@/test/server';
 
 const contents = [
   buildContent({ id: 1, title: 'Meditação para iniciantes', category: 'meditacao' }),
@@ -14,9 +11,7 @@ const contents = [
 ];
 
 beforeEach(() => {
-  jest.clearAllMocks();
-  mockedApi.getCategories.mockResolvedValue(categories);
-  mockedApi.getContents.mockResolvedValue(paginate(contents));
+  seedContents(contents);
 });
 
 describe('CatalogPage', () => {
@@ -35,17 +30,31 @@ describe('CatalogPage', () => {
     const { user } = renderApp();
     await screen.findByText('2 conteúdos');
 
-    mockedApi.getContents.mockResolvedValue(paginate([contents[1]]));
     await user.type(screen.getByRole('textbox', { name: 'Buscar por título' }), 'yoga{Enter}');
 
     expect(
       await screen.findByRole('heading', { name: 'Resultados para “yoga”' }),
     ).toBeInTheDocument();
     expect(await screen.findByText('1 conteúdo')).toBeInTheDocument();
-    expect(mockedApi.getContents).toHaveBeenLastCalledWith(
-      expect.objectContaining({ search: 'yoga', page: 1 }),
-      expect.anything(),
+    expect(lastContentsQuery()?.get('search')).toBe('yoga');
+    expect(lastContentsQuery()?.get('page')).toBe('1');
+  });
+
+  it('volta para a primeira página ao fazer uma nova busca', async () => {
+    seedContents(
+      Array.from({ length: 12 }, (_, index) =>
+        buildContent({ id: index + 1, title: `Yoga ${index + 1}`, category: 'yoga' }),
+      ),
     );
+    const { user } = renderApp('/?pagina=2');
+    await screen.findByRole('link', { name: /Yoga 11/ });
+    expect(lastContentsQuery()?.get('page')).toBe('2');
+
+    await user.type(screen.getByRole('textbox', { name: 'Buscar por título' }), 'yoga{Enter}');
+
+    expect(await screen.findByRole('link', { name: /Yoga 1\b/ })).toBeInTheDocument();
+    expect(lastContentsQuery()?.get('page')).toBe('1');
+    expect(lastContentsQuery()?.get('search')).toBe('yoga');
   });
 
   it('filtra por categoria ao clicar no chip', async () => {
@@ -58,19 +67,15 @@ describe('CatalogPage', () => {
       'aria-pressed',
       'true',
     );
-    expect(mockedApi.getContents).toHaveBeenLastCalledWith(
-      expect.objectContaining({ category: 'yoga' }),
-      expect.anything(),
-    );
+    expect(await screen.findByText('1 conteúdo')).toBeInTheDocument();
+    expect(lastContentsQuery()?.get('category')).toBe('yoga');
   });
 
   it('mostra estado vazio e permite limpar os filtros', async () => {
-    mockedApi.getContents.mockResolvedValue(paginate([]));
     const { user } = renderApp('/?busca=inexistente');
 
     expect(await screen.findByText('Nenhum conteúdo encontrado')).toBeInTheDocument();
 
-    mockedApi.getContents.mockResolvedValue(paginate(contents));
     await user.click(screen.getByRole('button', { name: 'Ver todos os conteúdos' }));
 
     expect(await screen.findByRole('heading', { name: 'Todos os conteúdos' })).toBeInTheDocument();
@@ -78,7 +83,6 @@ describe('CatalogPage', () => {
   });
 
   it('mostra estado vazio ao filtrar por uma categoria sem conteúdos', async () => {
-    mockedApi.getContents.mockResolvedValue(paginate([]));
     renderApp('/?categoria=sono');
 
     expect(await screen.findByText('Nenhum conteúdo encontrado')).toBeInTheDocument();
@@ -87,9 +91,7 @@ describe('CatalogPage', () => {
   });
 
   it('mostra um placeholder quando o conteúdo não tem imagem', async () => {
-    mockedApi.getContents.mockResolvedValue(
-      paginate([buildContent({ id: 7, title: 'Yoga restaurativa', thumbnailUrl: null })]),
-    );
+    seedContents([buildContent({ id: 7, title: 'Yoga restaurativa', thumbnailUrl: null })]);
     renderApp();
 
     const card = (await screen.findByRole('link', { name: /Yoga restaurativa/ })).closest('li')!;
@@ -98,11 +100,15 @@ describe('CatalogPage', () => {
   });
 
   it('descarta a resposta de uma busca antiga que chega depois da nova', async () => {
-    let resolveStale: (value: Paginated<Content>) => void = () => {};
-    mockedApi.getContents.mockImplementation((query) => {
-      if (query?.search === 'med') return new Promise((resolve) => (resolveStale = resolve));
-      return Promise.resolve(paginate(query?.search === 'yoga' ? [contents[1]] : contents));
-    });
+    let releaseStale: () => void = () => {};
+    const staleResponseGate = new Promise<void>((resolve) => (releaseStale = resolve));
+    server.use(
+      http.get(apiUrl('/contents'), async ({ request }) => {
+        if (new URL(request.url).searchParams.get('search') !== 'med') return undefined;
+        await staleResponseGate;
+        return HttpResponse.json(paginate([contents[0]]));
+      }),
+    );
     const { user } = renderApp();
     await screen.findByText('2 conteúdos');
 
@@ -113,18 +119,21 @@ describe('CatalogPage', () => {
 
     expect(await screen.findByText('1 conteúdo')).toBeInTheDocument();
 
-    await act(async () => resolveStale(paginate([contents[0]])));
+    await act(async () => releaseStale());
 
     expect(screen.getByRole('link', { name: /Yoga matinal/ })).toBeInTheDocument();
     expect(
       screen.queryByRole('link', { name: /Meditação para iniciantes/ }),
     ).not.toBeInTheDocument();
-    const staleCall = mockedApi.getContents.mock.calls.find(([query]) => query?.search === 'med');
-    expect(staleCall?.[1]?.aborted).toBe(true);
+    expect(screen.getByText('1 conteúdo')).toBeInTheDocument();
   });
 
   it('mostra erro e recarrega ao clicar em tentar novamente', async () => {
-    mockedApi.getContents.mockRejectedValueOnce(new ApiError('Servidor indisponível', 500));
+    server.use(
+      http.get(apiUrl('/contents'), () => errorResponse(500, 'Servidor indisponível'), {
+        once: true,
+      }),
+    );
     const { user } = renderApp();
 
     const alert = await screen.findByRole('alert');
@@ -136,8 +145,16 @@ describe('CatalogPage', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('mostra mensagem de conexão quando a rede falha', async () => {
+    server.use(http.get(apiUrl('/contents'), () => HttpResponse.error(), { once: true }));
+    renderApp();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Não foi possível conectar ao servidor',
+    );
+  });
+
   it('navega para o detalhe ao clicar em um card', async () => {
-    mockedApi.getContent.mockResolvedValue(buildContentDetail({ id: 2, title: 'Yoga matinal' }));
     const { user } = renderApp();
 
     await user.click(await screen.findByRole('link', { name: /Yoga matinal/ }));
@@ -145,6 +162,6 @@ describe('CatalogPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Yoga matinal', level: 1 }),
     ).toBeInTheDocument();
-    expect(mockedApi.getContent).toHaveBeenCalledWith(2, expect.anything());
+    expect(findRequests('GET', '/contents/2')).toHaveLength(1);
   });
 });

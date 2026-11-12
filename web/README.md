@@ -39,7 +39,9 @@ Se o erro for outro (falha de rede, erro 500), aí sim o botão volta ao que era
 
 ## Testes
 
-Rode `npm test` na raiz. Os testes usam Jest e React Testing Library, com a API mockada, e cobrem o catálogo, o detalhe, os favoritos (inclusive quando a API falha) e o uso só pelo teclado.
+Rode `npm test` na raiz. Os testes usam Jest, React Testing Library e [MSW](https://mswjs.io), que intercepta as chamadas HTTP e responde como a API de verdade, guardando os favoritos em memória. Assim, o app roda inteiro nos testes, do clique até a requisição, sem precisar da API no ar.
+
+Eles cobrem o catálogo, a busca, o detalhe, os favoritos (inclusive com erro 500, queda de rede e 409) e o uso só pelo teclado.
 
 ![Testes da web passando](../docs/testes-web.png)
 
