@@ -1,97 +1,54 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Namu · Mobile
 
-# Getting Started
+App React Native da biblioteca de conteúdos de bem-estar da Namu. Usa os tipos, o cliente da API e as formatações do pacote [`@namu/shared`](../packages/shared).
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Tecnologias
 
-## Step 1: Start Metro
+- TypeScript
+- React Native 0.88
+- React Navigation (native stack)
+- TanStack Query
+- Axios
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Funcionalidades
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- Listagem de conteúdos com scroll infinito e pull-to-refresh
+- Detalhe do conteúdo com favoritar e desfavoritar
+- Tela de favoritos
+- Estados de carregamento e erro
+- Placeholder "Imagem não disponível" para conteúdo sem imagem ou com imagem que falhou
 
-```sh
-# Using npm
+## Como rodar
+
+Antes, siga o guia [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) do React Native e suba a API (veja o [README da raiz](../README.md#api)).
+
+O mobile tem as próprias dependências. Dentro de `mobile/`:
+
+```bash
+npm install
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
+Com o Metro rodando, em outro terminal:
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```bash
+npm run android:device   # Android (emulador ou aparelho via USB)
+npm run ios              # iOS
 ```
 
-### iOS
+O app acessa a API em `http://localhost:3333` ([src/config/env.ts](src/config/env.ts)). No Android, o `android:device` faz o `adb reverse` das portas 8081 (Metro) e 3333 (API), para que `localhost` no aparelho aponte para a sua máquina.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+No iOS, instale os pods na primeira vez e sempre que mudar alguma dependência nativa:
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
+```bash
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## Imagens que não carregam
 
-```sh
-# Using npm
-npm run ios
+O mobile também tem conteúdos que aparecem com o placeholder "Imagem não disponível" mesmo tendo imagem cadastrada. O motivo é o mesmo da web: as `thumbnailUrl` devolvidas pela API apontam para o [picsum.photos](https://picsum.photos), que está instável e responde com **erro 522 (Connection timed out)** do Cloudflare. Quando o `Image` do React Native não consegue carregar a imagem, o `ContentThumbnail` mostra o placeholder no lugar dela. Não é um problema do app.
 
-# OR using Yarn
-yarn ios
-```
+![Erro 522 do Cloudflare ao abrir picsum.photos/seed/namu-11/640/360](../docs/picsum-erro-522.png)
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Os testes feitos e o motivo de não ter retentativa automática estão no [README da web](../web/README.md#imagens-que-não-carregam).
