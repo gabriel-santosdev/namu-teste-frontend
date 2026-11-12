@@ -29,6 +29,8 @@ Se você só quer ver o app funcionando, não precisa montar todo o ambiente Rea
 
 Um detalhe: o APK procura a API em `http://10.0.2.2:3333`. Esse é o endereço que o emulador usa para falar com o seu computador, então o APK funciona no emulador, mas não num celular de verdade. Se quiser testar num aparelho físico, dá uma olhada em [Endereço da API](#endereço-da-api).
 
+Se algo não funcionar, seja na instalação, ao abrir o app ou ao conectar com a API, é só me chamar. Fico à disposição para ajudar a deixar tudo rodando e garantir que o teste possa ser validado.
+
 Se precisar gerar o APK de novo, rode dentro de `mobile/`:
 
 ```bash
