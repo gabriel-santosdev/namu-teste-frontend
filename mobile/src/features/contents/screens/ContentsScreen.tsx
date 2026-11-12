@@ -10,8 +10,9 @@ import type { RootStackParamList } from '../../../navigation/types';
 import { colors } from '../../../theme/colors';
 import { spacing } from '../../../theme/spacing';
 import { ContentListItem } from '../components/ContentListItem';
+import { ContentsListFooter } from '../components/ContentsListFooter';
 import { useCategoryName } from '../hooks/useCategoryName';
-import { useFirstContentsPage } from '../hooks/useFirstContentsPage';
+import { useInfiniteContents } from '../hooks/useInfiniteContents';
 
 function keyExtractor(content: Content) {
   return String(content.id);
@@ -27,14 +28,32 @@ type ContentsScreenProps = NativeStackScreenProps<
 >;
 
 export function ContentsScreen({ navigation }: ContentsScreenProps) {
-  const { data, error, isPending, isRefetching, refetch } =
-    useFirstContentsPage();
+  const {
+    data,
+    error,
+    isPending,
+    isRefetching,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useInfiniteContents();
   const getCategoryName = useCategoryName();
   const { isRefreshing, onRefresh } = usePullToRefresh(refetch);
 
   const handleRetry = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!hasNextPage || isFetchingNextPage || isFetchNextPageError) return;
+    fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError]);
+
+  const handleRetryLoadMore = useCallback(() => {
+    fetchNextPage();
+  }, [fetchNextPage]);
 
   const handleOpenContent = useCallback(
     (id: number) => {
@@ -70,18 +89,36 @@ export function ContentsScreen({ navigation }: ContentsScreenProps) {
 
   return (
     <FlatList
-      data={data.data}
+      data={data.items}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       ItemSeparatorComponent={ItemSeparator}
       contentContainerStyle={styles.listContent}
       ListHeaderComponent={
-        data.data.length > 0 ? (
+        data.items.length > 0 ? (
           <Text style={styles.summary}>
-            {data.data.length} de {data.total} conteúdos
+            {data.items.length} de {data.total} conteúdos
           </Text>
         ) : undefined
       }
+      ListFooterComponent={
+        data.items.length > 0 ? (
+          <ContentsListFooter
+            isLoadingMore={isFetchingNextPage}
+            loadMoreError={
+              isFetchNextPageError
+                ? `Não foi possível carregar mais conteúdos. ${getErrorMessage(
+                    error,
+                  )}`
+                : null
+            }
+            hasReachedEnd={!hasNextPage}
+            onRetry={handleRetryLoadMore}
+          />
+        ) : undefined
+      }
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={0.5}
       ListEmptyComponent={
         <FeedbackState
           title="Nenhum conteúdo por aqui"
