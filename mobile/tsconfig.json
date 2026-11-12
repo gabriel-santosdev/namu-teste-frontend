@@ -1,5 +1,10 @@
 {
   "extends": "@react-native/typescript-config",
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["**/node_modules", "**/Pods"]
+  "compilerOptions": {
+    "paths": {
+      "@namu/shared": ["../packages/shared/src"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "../packages/shared/src"],
+  "exclude": ["**/node_modules", "**/Pods", "../packages/shared/src/__tests__"]
 }
