@@ -15,7 +15,15 @@ const result = spawnSync(gradlew, ['assembleDebug', '-PembedBundle'], {
 
 if (result.status === 0) {
   console.log(
-    `\nAPK gerado em ${path.join(androidDir, 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk')}`,
+    `\nAPK gerado em ${path.join(
+      androidDir,
+      'app',
+      'build',
+      'outputs',
+      'apk',
+      'debug',
+      'app-debug.apk',
+    )}`,
   );
 }
 

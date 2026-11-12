@@ -34,3 +34,32 @@ jobs:
 
       - name: Testes
         run: npm test -- --ci
+
+  mobile:
+    name: Mobile (lint e tipos)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mobile/package-lock.json
+
+      - name: Dependências do shared
+        run: npm ci
+
+      - name: Dependências do mobile
+        run: npm ci
+        working-directory: mobile
+
+      - name: Lint
+        run: npm run lint
+        working-directory: mobile
+
+      - name: Tipos
+        run: npm run typecheck
+        working-directory: mobile

@@ -5,7 +5,8 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "lint": "eslint .",
+    "lint": "node scripts/lint.js",
+    "typecheck": "tsc --noEmit",
     "start": "react-native start",
     "android:device": "adb reverse tcp:8081 tcp:8081 && adb reverse tcp:3333 tcp:3333 && react-native run-android",
     "android:apk": "node scripts/build-apk.js"
