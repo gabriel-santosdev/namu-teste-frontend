@@ -1,6 +1,6 @@
 import { getErrorMessage, type Content } from '@namu/shared';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErrorState } from '../../../components/ErrorState';
@@ -12,6 +12,7 @@ import { colors } from '../../../theme/colors';
 import { spacing } from '../../../theme/spacing';
 import { ContentListItem } from '../components/ContentListItem';
 import { ContentsListFooter } from '../components/ContentsListFooter';
+import { SearchField } from '../components/SearchField';
 import { useCategoryName } from '../hooks/useCategoryName';
 import { useInfiniteContents } from '../hooks/useInfiniteContents';
 
@@ -29,6 +30,7 @@ type ContentsScreenProps = NativeStackScreenProps<
 >;
 
 export function ContentsScreen({ navigation }: ContentsScreenProps) {
+  const [search, setSearch] = useState('');
   const {
     data,
     error,
@@ -39,7 +41,8 @@ export function ContentsScreen({ navigation }: ContentsScreenProps) {
     hasNextPage,
     isFetchingNextPage,
     isFetchNextPageError,
-  } = useInfiniteContents();
+    isPlaceholderData,
+  } = useInfiniteContents(search);
   const getCategoryName = useCategoryName();
   const { isRefreshing, onRefresh } = usePullToRefresh(refetch);
   const insets = useSafeAreaInsets();
@@ -75,74 +78,105 @@ export function ContentsScreen({ navigation }: ContentsScreenProps) {
     [getCategoryName, handleOpenContent],
   );
 
-  if (isPending) {
-    return <LoadingState title="Carregando conteúdos…" />;
-  }
+  return (
+    <View style={styles.container}>
+      <View style={styles.searchBar}>
+        <SearchField onSearch={setSearch} isSearching={isPlaceholderData} />
+      </View>
+      {renderBody()}
+    </View>
+  );
 
-  if (!data) {
+  function renderBody() {
+    if (isPending) {
+      return <LoadingState title="Carregando conteúdos…" />;
+    }
+
+    if (!data) {
+      return (
+        <ErrorState
+          message={getErrorMessage(error)}
+          onRetry={handleRetry}
+          isRetrying={isRefetching}
+        />
+      );
+    }
+
     return (
-      <ErrorState
-        message={getErrorMessage(error)}
-        onRetry={handleRetry}
-        isRetrying={isRefetching}
+      <FlatList
+        data={data.items}
+        style={isPlaceholderData && styles.listStale}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        ItemSeparatorComponent={ItemSeparator}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: spacing.lg + insets.bottom },
+        ]}
+        ListHeaderComponent={
+          data.items.length > 0 ? (
+            <Text style={styles.summary}>
+              {data.items.length} de {data.total} conteúdos
+            </Text>
+          ) : undefined
+        }
+        ListFooterComponent={
+          data.items.length > 0 ? (
+            <ContentsListFooter
+              isLoadingMore={isFetchingNextPage}
+              loadMoreError={
+                isFetchNextPageError
+                  ? `Não foi possível carregar mais conteúdos. ${getErrorMessage(
+                      error,
+                    )}`
+                  : null
+              }
+              hasReachedEnd={!hasNextPage}
+              onRetry={handleRetryLoadMore}
+            />
+          ) : undefined
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListEmptyComponent={
+          search ? (
+            <FeedbackState
+              title={`Nenhum resultado para “${search}”`}
+              description="Tente buscar por outro título."
+            />
+          ) : (
+            <FeedbackState
+              title="Nenhum conteúdo por aqui"
+              description="Ainda não há conteúdos disponíveis. Puxe para atualizar."
+            />
+          )
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
       />
     );
   }
-
-  return (
-    <FlatList
-      data={data.items}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-      ItemSeparatorComponent={ItemSeparator}
-      contentContainerStyle={[
-        styles.listContent,
-        { paddingBottom: spacing.lg + insets.bottom },
-      ]}
-      ListHeaderComponent={
-        data.items.length > 0 ? (
-          <Text style={styles.summary}>
-            {data.items.length} de {data.total} conteúdos
-          </Text>
-        ) : undefined
-      }
-      ListFooterComponent={
-        data.items.length > 0 ? (
-          <ContentsListFooter
-            isLoadingMore={isFetchingNextPage}
-            loadMoreError={
-              isFetchNextPageError
-                ? `Não foi possível carregar mais conteúdos. ${getErrorMessage(
-                    error,
-                  )}`
-                : null
-            }
-            hasReachedEnd={!hasNextPage}
-            onRetry={handleRetryLoadMore}
-          />
-        ) : undefined
-      }
-      onEndReached={handleLoadMore}
-      onEndReachedThreshold={0.5}
-      ListEmptyComponent={
-        <FeedbackState
-          title="Nenhum conteúdo por aqui"
-          description="Ainda não há conteúdos disponíveis. Puxe para atualizar."
-        />
-      }
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={onRefresh}
-          colors={[colors.primary]}
-          tintColor={colors.primary}
-        />
-      }
-    />
-  );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  searchBar: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
+  listStale: {
+    opacity: 0.6,
+  },
   listContent: {
     flexGrow: 1,
     padding: spacing.lg,

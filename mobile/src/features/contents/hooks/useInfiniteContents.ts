@@ -5,10 +5,13 @@ import {
   type ContentsQuery,
   type Paginated,
 } from '@namu/shared';
-import { useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { api } from '../../../lib/api';
 
-const BASE_QUERY: ContentsQuery = { limit: CONTENTS_PAGE_SIZE };
 const FIRST_PAGE = 1;
 
 export interface ContentsFeed {
@@ -29,14 +32,20 @@ function toContentsFeed(data: InfiniteData<Paginated<Content>>): ContentsFeed {
   return { items, total };
 }
 
-export function useInfiniteContents() {
+export function useInfiniteContents(search = '') {
+  const baseQuery: ContentsQuery = {
+    limit: CONTENTS_PAGE_SIZE,
+    ...(search ? { search } : {}),
+  };
+
   return useInfiniteQuery({
-    queryKey: [...queryKeys.contents(BASE_QUERY), 'infinite'],
+    queryKey: [...queryKeys.contents(baseQuery), 'infinite'],
     queryFn: ({ pageParam, signal }) =>
-      api.getContents({ ...BASE_QUERY, page: pageParam }, signal),
+      api.getContents({ ...baseQuery, page: pageParam }, signal),
     initialPageParam: FIRST_PAGE,
     getNextPageParam: lastPage =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     select: toContentsFeed,
+    placeholderData: keepPreviousData,
   });
 }
