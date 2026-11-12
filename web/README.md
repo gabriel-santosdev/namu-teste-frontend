@@ -5,7 +5,7 @@ A versão web da biblioteca de conteúdos, feita com React 19, Vite, TypeScript,
 ## O que tem
 
 - Catálogo paginado com busca por título e filtro por categoria
-- Página de detalhe, com favoritar e desfavoritar
+- Página de detalhe, com favoritar e desfavoritar. O botão muda na hora e volta ao estado anterior se a API falhar.
 - Telas de carregamento, lista vazia e erro
 - Layout responsivo e navegação pelo teclado
 
@@ -30,6 +30,12 @@ npm run dev:web
 ```
 
 Abre em `http://localhost:5173`. Para usar outro endereço de API, troque o `VITE_API_URL` no `.env`.
+
+## Por que o 409 não desfaz o favorito
+
+Quando você favorita algo que já estava nos favoritos (por exemplo, em outra aba), a API responde 409. Nesse caso eu não desfaço o clique, porque o conteúdo já está favoritado e o botão está mostrando a verdade. Desfazer deixaria a tela errada. Depois de qualquer resposta, o app busca os dados de novo para garantir que tudo bate com a API. O mesmo vale para o 404 ao remover um favorito que já tinha sido removido.
+
+Se o erro for outro (falha de rede, erro 500), aí sim o botão volta ao que era e aparece uma mensagem.
 
 ## Testes
 
